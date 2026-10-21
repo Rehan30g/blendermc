@@ -1,6 +1,6 @@
 # Custom World (dimensi liminal)
 
-Dimensi `echoliminal:liminal` berisi level yang **bukan blok voxel**. Setiap level adalah model 3D dari Blender (file `.glb`) yang digambar oleh renderer custom. Pemain tetap bisa berjalan di permukaannya, menaruh dan menghancurkan blok, dan potongan geometrinya bisa diambil lalu dipasang lagi.
+Dimensi `blendermc:liminal` berisi level yang **bukan blok voxel**. Setiap level adalah model 3D dari Blender (file `.glb`) yang digambar oleh renderer custom. Pemain tetap bisa berjalan di permukaannya, menaruh dan menghancurkan blok, dan potongan geometrinya bisa diambil lalu dipasang lagi.
 
 Dokumen ini menjelaskan cara memakai, membuat, dan merawat level. Panduan singkat untuk mengedit level hallway di Blender ada di `tools/liminal/README.md`.
 
@@ -12,12 +12,12 @@ Dokumen ini menjelaskan cara memakai, membuat, dan merawat level. Panduan singka
 
 | Command | Fungsi |
 |---|---|
-| `/echoliminal` | masuk ke level aktif (level tempatmu berdiri, atau yang terakhir dimasuki) |
-| `/echoliminal enter <nama>` | teleport ke spawn level itu; saat pertama kali, level diisi lebih dulu |
-| `/echoliminal leave` | kembali ke posisi sebelum masuk (atau ke titik respawn) |
-| `/echoliminal reload` | membaca ulang semua `.glb` tanpa restart game (memuat ulang resource beberapa detik) |
-| `/echoliminal restore` | mengembalikan semua geometri yang hancur **dan** batu yang sudah digali di level tempatmu berdiri |
-| `/echoliminal time <0..24000>` | uji siklus siang/malam: melompatkan waktu level tempatmu berdiri (0 terbit, 6000 siang, 12000 terbenam, 18000 tengah malam) |
+| `/blendermc` | masuk ke level aktif (level tempatmu berdiri, atau yang terakhir dimasuki) |
+| `/blendermc enter <nama>` | teleport ke spawn level itu; saat pertama kali, level diisi lebih dulu |
+| `/blendermc leave` | kembali ke posisi sebelum masuk (atau ke titik respawn) |
+| `/blendermc reload` | membaca ulang semua `.glb` tanpa restart game (memuat ulang resource beberapa detik) |
+| `/blendermc restore` | mengembalikan semua geometri yang hancur **dan** batu yang sudah digali di level tempatmu berdiri |
+| `/blendermc time <0..24000>` | uji siklus siang/malam: melompatkan waktu level tempatmu berdiri (0 terbit, 6000 siang, 12000 terbenam, 18000 tengah malam) |
 
 Di mode dev, command ini selalu boleh dipakai walaupun cheat mati. Untuk command vanilla, buka world dengan cheat aktif (atau `/haunt cheats on` kalau Echo World ikut terpasang).
 
@@ -33,8 +33,8 @@ Level bawaan:
 
 ## 2. Di mana file level disimpan
 
-- **Ikut mod (perlu build ulang):** `src/main/resources/assets/echoliminal/liminal/<nama>.glb`
-- **Tanpa build:** `run/config/echoliminal/liminal/<nama>.glb`. Folder ini **dibaca lebih dulu**, jadi file di sini menimpa versi bawaan dengan nama yang sama. Setelah menaruh file, jalankan `/echoliminal reload`.
+- **Ikut mod (perlu build ulang):** `src/main/resources/assets/blendermc/liminal/<nama>.glb`
+- **Tanpa build:** `run/config/blendermc/liminal/<nama>.glb`. Folder ini **dibaca lebih dulu**, jadi file di sini menimpa versi bawaan dengan nama yang sama. Setelah menaruh file, jalankan `/blendermc reload`.
 
 Nama level = nama file tanpa `.glb`.
 
@@ -94,7 +94,7 @@ Cara kerjanya:
 - **Malam**: tidak ada matahari, cahaya langit tinggal sekitar seperlima dan berwarna biru dingin (cahaya bulan), langit dan kabut jadi 7–17% dari warna siang dengan nuansa biru, skybox digelapkan. Saat terbit dan terbenam ada semburat hangat.
 - **Matahari dan bulan** digambar sebagai billboard bundar yang buram, bertekstur prosedural (tanpa tekstur vanilla): matahari berwarna hangat (merah-oranye di dekat horizon) dengan cahaya lebar, bulan lebih kecil dan pucat. Keduanya menghilang pelan di bawah horizon. Matahari hanya tergambar jika `sun_visible = true`.
 
-Untuk menguji tanpa menunggu: `/echoliminal time <0..24000>` melompatkan waktu level tempatmu berdiri (0 terbit, 6000 siang, 12000 terbenam, 18000 tengah malam). Lompatan hanya disimpan di memori (hilang saat game ditutup) dan tidak ikut dikirim ke pemain yang masuk belakangan.
+Untuk menguji tanpa menunggu: `/blendermc time <0..24000>` melompatkan waktu level tempatmu berdiri (0 terbit, 6000 siang, 12000 terbenam, 18000 tengah malam). Lompatan hanya disimpan di memori (hilang saat game ditutup) dan tidak ikut dikirim ke pemain yang masuk belakangan.
 
 ### Ekspor
 File > Export > glTF 2.0:
@@ -118,12 +118,12 @@ Saat dimuat, mesh otomatis dipotong pada grid 1 blok, jadi ekspor manual pun ama
 ## 4. Cara kerja di dalam game
 
 ### Setiap level punya wilayah sendiri
-Semua level ada di dimensi yang sama tapi di wilayah berbeda: origin = `slot × 8192` di sumbu X (Y=64, Z=0). Slot diberikan saat level pertama kali dimasuki dan dicatat di `echoliminal.json` di folder world. Blok yang kamu bangun di satu level tidak muncul di level lain.
+Semua level ada di dimensi yang sama tapi di wilayah berbeda: origin = `slot × 8192` di sumbu X (Y=64, Z=0). Slot diberikan saat level pertama kali dimasuki dan dicatat di `blendermc.json` di folder world. Blok yang kamu bangun di satu level tidak muncul di level lain.
 
 **Jangan menghapus atau mengedit `slots` di file itu**, karena posisi level akan bergeser.
 
 ### Geometri = blok `mesh_cell`
-Setiap sel 1×1×1 yang berisi geometri menjadi blok `echoliminal:mesh_cell` yang tak terlihat sebagai kubus. Isinya:
+Setiap sel 1×1×1 yang berisi geometri menjadi blok `blendermc:mesh_cell` yang tak terlihat sebagai kubus. Isinya:
 - **Tabrakan segitiga sungguhan.** Lereng benar-benar miring, step-up vanilla tetap jalan, dan sisi belakang permukaan bisa diinjak tanpa melayang.
 - **Bidikan dengan ketebalan**, jadi dinding vertikal bisa diklik untuk menaruh blok.
 - **Outline berupa garis segitiga**, bukan kotak.
@@ -136,7 +136,7 @@ Setiap sel 1×1×1 yang berisi geometri menjadi blok `echoliminal:mesh_cell` yan
 - Entity yang tertanam di belakang permukaan (misalnya TNT yang dinyalakan di dalam lantai) didorong keluar ke permukaan.
 
 ### Volume dan batu
-- Level dengan `stone_fill=true` diisi `echoliminal:liminal_stone` di balik permukaannya. Pengisiannya sekali per level; batu yang sudah digali tidak diisi ulang kecuali lewat `restore`.
+- Level dengan `stone_fill=true` diisi `blendermc:liminal_stone` di balik permukaannya. Pengisiannya sekali per level; batu yang sudah digali tidak diisi ulang kecuali lewat `restore`.
 - Sisi batu **hanya tergambar di dalam lubang galian**, jadi batu tidak pernah menembus permukaan.
 - Di sisi lubang yang memotong sel mesh, renderer menggambar **dinding potongan** bertekstur stone. Dinding ini hanya muncul di sebelah sel yang benar-benar digali.
 - Level berongga (`stone_fill=false`): di balik permukaan kosong. Lubang galian tetap ditutup dinding potongan.
@@ -195,10 +195,10 @@ Pakai `--disable-autoexec` untuk file dari internet.
 
 | Gejala | Coba |
 |---|---|
-| Level tidak ditemukan | cek nama file, lalu `/echoliminal reload`. Lihat log untuk error saat memuat .glb. |
+| Level tidak ditemukan | cek nama file, lalu `/blendermc reload`. Lihat log untuk error saat memuat .glb. |
 | Tekstur putih | teksturnya bukan PNG, atau tidak tertanam di .glb |
 | Langit atau kabut terlihat seperti Minecraft biasa | pastikan kamu di dimensi liminal dan metadata ikut terekspor (Include > Custom Properties) |
-| Ada batu atau tekstur stone di tempat yang aneh pada world tes lama | hapus folder `dimensions/echoliminal/liminal` di world itu, lalu masuk lagi |
+| Ada batu atau tekstur stone di tempat yang aneh pada world tes lama | hapus folder `dimensions/blendermc/liminal` di world itu, lalu masuk lagi |
 | Pencahayaan lama tidak berubah | tunggu hitungan latar belakang selesai (map79 sekitar 3–4 detik). Waktunya tercatat di log. |
 | Game crash saat start setelah build baru | kirim crash report dari `run/crash-reports/`. Biasanya ada mixin yang tidak cocok. |
 
@@ -206,14 +206,14 @@ Pakai `--disable-autoexec` untuk file dari internet.
 
 ## 8. Dunia tanpa batas (endless)
 
-Dimensi `echoliminal:liminal_endless` berisi dunia liminal prosedural yang tidak punya akhir. Bentuknya dihitung dari seed dunia (sama di server dan klien), bukan dari file `.glb`. Interaksinya sama dengan level biasa: tabrakan segitiga sungguhan, menggali, menaruh blok, fragmen.
+Dimensi `blendermc:liminal_endless` berisi dunia liminal prosedural yang tidak punya akhir. Bentuknya dihitung dari seed dunia (sama di server dan klien), bukan dari file `.glb`. Interaksinya sama dengan level biasa: tabrakan segitiga sungguhan, menggali, menaruh blok, fragmen.
 
 ### Pemakaian
 | Command | Fungsi |
 |---|---|
-| `/echoliminal endless` | masuk ke dunia ini (muncul di gedung backrooms dekat 0,0); posisi sebelumnya disimpan |
-| `/echoliminal leave` | kembali ke posisi sebelum masuk |
-| `/echoliminal restore` | (di dimensi ini) memasang lagi sel geometri yang hancur di chunk yang termuat |
+| `/blendermc endless` | masuk ke dunia ini (muncul di gedung backrooms dekat 0,0); posisi sebelumnya disimpan |
+| `/blendermc leave` | kembali ke posisi sebelum masuk |
+| `/blendermc restore` | (di dimensi ini) memasang lagi sel geometri yang hancur di chunk yang termuat |
 
 ### Zona
 - **Backrooms**: gedung dengan ruangan tak beraturan, dinding miring dan melengkung, ambang pintu, lengkungan, pilar segi delapan, partisi bersudut, panel lampu neon.
@@ -245,11 +245,11 @@ Kabut tiap zona menyembunyikan batas antar cincin. Tekstur 128 px dengan mipmap 
 | Perintah | Fungsi |
 |---|---|
 | `./gradlew endlessExport -Pseed=12345 -Pregion=0,0 -Pradius=1 -Plod=0 [-Pout=file.glb]` | menulis area sebagai `.glb` (bisa dibuka di Blender) dan mencetak waktu dan jumlah segitiga per LOD. Pakai `-Plod=1` atau lebih untuk file kecil; LOD 0 radius 1 sekitar 150 MB |
-| `java -cp ... dev.echoliminal.tools.EndlessConnectivity <seed> <radius>` | memeriksa semua lantai tiap modul terhubung ke titik muncul (ada juga di kelas `ConnectivityCheck`) |
+| `java -cp ... dev.blendermc.tools.EndlessConnectivity <seed> <radius>` | memeriksa semua lantai tiap modul terhubung ke titik muncul (ada juga di kelas `ConnectivityCheck`) |
 | `tools/endless/preview.py` | render pratinjau Blender dari `.glb` hasil ekspor (`blender --background --factory-startup --python tools/endless/preview.py -- in.glb awalan`) |
 
 ### Batasan
 - LOD 0 sekitar 60 ribu segitiga per region 64x64 (jauh lebih berat dari versi sebelumnya); karena itu cincin LOD 0 hanya 80 blok. Segitiga LOD 0 tidak dipotong per sel: sel yang digali menyembunyikan segitiga yang pusatnya ada di sel itu (bisa tersisa serpihan kecil).
 - Dinding potongan (cut faces) untuk lubang galian di mesh endless belum dipasang; batu di bawah padang hanya tampil di lubang galian.
 - Belum ada: tangga Escher yang berputar kembali, ruangan miring, ruang sempit sangat tinggi, air-terjun tangga.
-- Dunia lama dari versi sebelumnya (voxel) harus dibuat ulang (hapus `dimensions/echoliminal/liminal_endless` di world tes).
+- Dunia lama dari versi sebelumnya (voxel) harus dibuat ulang (hapus `dimensions/blendermc/liminal_endless` di world tes).

@@ -1,14 +1,14 @@
-// Echoliminal. Inside D:\JAVAMODS it is a subproject of the Echo World build (shared Gradle home, Minecraft jars and
+// BlenderMC. Inside D:\JAVAMODS it is a subproject of the Echo World build (shared Gradle home, Minecraft jars and
 // Loom cache); cloned on its own, settings.gradle and gradle.properties here make it a build by itself.
 plugins {
 	id 'net.fabricmc.fabric-loom-remap'
 }
 
 version = rootProject.version
-group = "dev.echoliminal"
+group = "dev.blendermc"
 
 base {
-	archivesName = "echoliminal"
+	archivesName = "blendermc"
 }
 
 repositories {
@@ -29,7 +29,7 @@ loom {
 	splitEnvironmentSourceSets()
 
 	mods {
-		"echoliminal" {
+		"blendermc" {
 			sourceSet sourceSets.main
 			sourceSet sourceSets.client
 		}
@@ -37,7 +37,7 @@ loom {
 
 	runs {
 		// Named "liminalClient" so `gradlew runClient` at the root keeps starting Echo World only;
-		// this one is `gradlew runLiminalClient` (or `:echoliminal:runLiminalClient`).
+		// this one is `gradlew runLiminalClient` (or `:blendermc:runLiminalClient`).
 		client {
 			ideConfigGenerated = false
 		}
@@ -46,7 +46,7 @@ loom {
 		}
 		liminalClient {
 			client()
-			configName = "Echoliminal Client"
+			configName = "BlenderMC Client"
 			runDir = "run"
 			vmArg "-Xmx3G"
 			vmArg "-Djava.io.tmpdir=${rootProject.file('.tmp').absolutePath}"
@@ -58,7 +58,7 @@ loom {
 		// Headless server for testing the Blender live link without a game window: `gradlew runLiminalServer`.
 		liminalServer {
 			server()
-			configName = "Echoliminal Server"
+			configName = "BlenderMC Server"
 			runDir = project.relativePath(rootProject.file(".tmp/liminal-server"))
 			ideConfigGenerated = false
 			vmArg "-Djava.io.tmpdir=${rootProject.file('.tmp').absolutePath}"
@@ -93,23 +93,23 @@ tasks.named("test") {
 // Dev tool: what a liminal .glb loads as, plus a walk from its spawn. -Pglb=path[;path...]
 tasks.register("glbCheck", JavaExec) {
 	classpath = sourceSets.test.runtimeClasspath
-	mainClass = "dev.echoliminal.tools.GlbCheck"
+	mainClass = "dev.blendermc.tools.GlbCheck"
 	jvmArgs "-Djava.io.tmpdir=${rootProject.file('.tmp').absolutePath}", "-Djava.awt.headless=true"
-	args = (project.findProperty("glb") ?: file("src/main/resources/assets/echoliminal/liminal/hallway.glb").absolutePath).toString().split(";").toList()
+	args = (project.findProperty("glb") ?: file("src/main/resources/assets/blendermc/liminal/hallway.glb").absolutePath).toString().split(";").toList()
 }
 
 // Dev tool: counts the stone cut faces of a liminal level (nothing dug / one cell dug). -Pglb=path
 tasks.register("cutCheck", JavaExec) {
 	classpath = sourceSets.test.runtimeClasspath
-	mainClass = "dev.echoliminal.tools.CutCheck"
+	mainClass = "dev.blendermc.tools.CutCheck"
 	jvmArgs "-Djava.io.tmpdir=${rootProject.file('.tmp').absolutePath}", "-Djava.awt.headless=true"
-	args = [(project.findProperty("glb") ?: file("src/main/resources/assets/echoliminal/liminal/hallway.glb").absolutePath).toString()]
+	args = [(project.findProperty("glb") ?: file("src/main/resources/assets/blendermc/liminal/hallway.glb").absolutePath).toString()]
 }
 
 // Dev tool: exports the generated endless world as a .glb for Blender and prints timings. -Pseed -Pregion=x,z -Pradius -Plod -Pout
 tasks.register("endlessExport", JavaExec) {
 	classpath = sourceSets.test.runtimeClasspath
-	mainClass = "dev.echoliminal.tools.EndlessExport"
+	mainClass = "dev.blendermc.tools.EndlessExport"
 	jvmArgs "-Djava.io.tmpdir=${rootProject.file('.tmp').absolutePath}", "-Djava.awt.headless=true", "-Xmx6g"
 	args = [
 		project.findProperty("seed") ?: "12345",
@@ -146,7 +146,7 @@ java {
 // -Pdir=folder -Pref=reference.glb
 tasks.register("liveSceneCheck", JavaExec) {
 	classpath = sourceSets.test.runtimeClasspath
-	mainClass = "dev.echoliminal.live.LiveSceneCheck"
+	mainClass = "dev.blendermc.live.LiveSceneCheck"
 	jvmArgs "-Djava.io.tmpdir=${rootProject.file('.tmp').absolutePath}", "-Djava.awt.headless=true"
-	args = [project.findProperty("dir") ?: "", project.findProperty("ref") ?: file("src/main/resources/assets/echoliminal/liminal/hallway.glb").absolutePath]
+	args = [project.findProperty("dir") ?: "", project.findProperty("ref") ?: file("src/main/resources/assets/blendermc/liminal/hallway.glb").absolutePath]
 }

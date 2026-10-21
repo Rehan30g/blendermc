@@ -2,12 +2,12 @@
 
 Scene Blender yang sedang kamu edit menjadi level liminal di game secara realtime. Hasil di game juga kembali ke Blender: pemain, blok yang dipasang, potongan mesh, dan lubang yang digali.
 
-Link hanya aktif di dev (`runLiminalClient`). Di luar dev, aktifkan dengan `-Decholiminal.live=true`. Port default `47660` (`-Decholiminal.live.port`), dan hanya menerima koneksi dari `127.0.0.1`.
+Link hanya aktif di dev (`runLiminalClient`). Di luar dev, aktifkan dengan `-Dblendermc.live=true`. Port default `47660` (`-Dblendermc.live.port`), dan hanya menerima koneksi dari `127.0.0.1`.
 
 ## Mulai
 
 1. `gradlew.bat runLiminalClient`, lalu buka world apa saja. Dengan `-PquickPlay=<folder world>`, world langsung terbuka.
-2. Di Blender 5.2, buka sidebar 3D View (N), tab **Echoliminal**. Add-on sudah terpasang: `%APPDATA%\Blender Foundation\Blender\5.2\scripts\addons\echoliminal_live` adalah junction ke `tools/blender/echoliminal_live`, jadi mengedit file di repo langsung berlaku setelah restart Blender.
+2. Di Blender 5.2, buka sidebar 3D View (N), tab **BlenderMC**. Add-on sudah terpasang: `%APPDATA%\Blender Foundation\Blender\5.2\scripts\addons\blendermc_live` adalah junction ke `tools/blender/blendermc_live`, jadi mengedit file di repo langsung berlaku setelah restart Blender.
 3. Isi **Level** (huruf kecil, angka, `_` atau `-`), lalu klik **Connect**.
 4. Klik **Put player in level**. Pemain di-teleport ke empty `spawn`.
 
@@ -25,7 +25,7 @@ Selama Blender terhubung, game tidak auto-pause saat kehilangan fokus. Kalau pau
 - **Draft lighting**: mengirim `unlit` sementara, sehingga game melewati bake. Cocok saat banyak menggeser; matikan untuk melihat hasil asli.
 - **Level live selalu kosong di dalam:** tidak ada batu pengisi dan tidak ada dinding batu (cut faces) di sel yang dibobol, apa pun nilai `stone_fill` di scene. Sel yang dirusak di game menjadi lubang polos.
 - **Lampu:** light Point, Spot, dan Area di Blender menjadi blok `minecraft:light` sungguhan di game. Lampu ini menerangi pemain, mob, dan blok, dan ikut di-bake ke mesh. Levelnya dihitung dari power (1000 W = 15, 250 W = 8; rumus 15·√(W/1000)), atau dari custom property `mc_level` (1–15) pada objek light. Light **Sun** menjadi arah matahari level, kecuali sudah ada empty `sun`. Warna lampu tidak ikut, karena cahaya blok Minecraft selalu putih.
-- Level live disimpan di `run/config/echoliminal/live/<level>/` dan tetap ada walaupun Blender tidak terbuka. Ia juga muncul di `/echoliminal enter`.
+- Level live disimpan di `run/config/blendermc/live/<level>/` dan tetap ada walaupun Blender tidak terbuka. Ia juga muncul di `/blendermc enter`.
 
 ## Langit dan kamera
 
@@ -78,5 +78,5 @@ TCP loopback. Setiap frame: `u32 BE panjang header` + header JSON UTF-8 + `u32 B
 
 ## Dev tool
 
-- `gradlew.bat :echoliminal:liveSceneCheck -Pdir=<folder obj_*.glb + scene.glb> [-Pref=level.glb]`: membangun level seperti link live, lalu membandingkannya dengan `.glb` referensi.
+- `gradlew.bat :blendermc:liveSceneCheck -Pdir=<folder obj_*.glb + scene.glb> [-Pref=level.glb]`: membangun level seperti link live, lalu membandingkannya dengan `.glb` referensi.
 - `gradlew.bat runLiminalServer`: server headless di `.tmp/liminal-server` untuk menguji link tanpa jendela game.

@@ -1,0 +1,9 @@
+{
+	"model": {
+		"type": "minecraft:special",
+		"base": "blendermc:item/mesh_piece",
+		"model": {
+			"type": "blendermc:mesh_piece"
+		}
+	}
+}

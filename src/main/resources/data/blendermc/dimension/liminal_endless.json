@@ -1,0 +1,7 @@
+{
+  "type": "blendermc:liminal_endless",
+  "generator": {
+    "type": "blendermc:endless",
+    "biome": "minecraft:the_void"
+  }
+}

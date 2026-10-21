@@ -1,0 +1,28 @@
+{
+	"required": true,
+	"package": "dev.blendermc.client.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"client": [
+		"AbstractBoatRendererInvoker",
+		"BoatRendererAccessor",
+		"EndlessClientLevelMixin",
+		"EndlessDepthFarMixin",
+		"EndlessFogRendererMixin",
+		"EndlessSkyRendererMixin",
+		"LiminalAoMixin",
+		"LiminalAttributeProbeMixin",
+		"LiminalClientLevelMixin",
+		"LiminalEntityLightMixin",
+		"LiminalFogRendererMixin",
+		"LiminalLightMixin",
+		"LiminalSkyRendererMixin",
+		"LivingEntityRendererInvoker",
+		"RaftRendererAccessor"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	},
+	"overwrites": {
+		"requireAnnotations": true
+	}
+}

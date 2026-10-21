@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "blendermc:block/mesh_cell"
+    }
+  }
+}

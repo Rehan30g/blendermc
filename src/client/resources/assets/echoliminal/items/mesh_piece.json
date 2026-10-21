@@ -1,9 +1,0 @@
-{
-	"model": {
-		"type": "minecraft:special",
-		"base": "echoliminal:item/mesh_piece",
-		"model": {
-			"type": "echoliminal:mesh_piece"
-		}
-	}
-}

@@ -1,24 +1,24 @@
 {
 	"schemaVersion": 1,
-	"id": "echoliminal",
+	"id": "blendermc",
 	"version": "${version}",
-	"name": "Echoliminal",
+	"name": "BlenderMC",
 	"description": "Liminal levels made from 3D models instead of blocks, and an endless liminal world.",
 	"authors": [],
 	"license": "All-Rights-Reserved",
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"dev.echoliminal.EchoLiminal"
+			"dev.blendermc.BlenderMc"
 		],
 		"client": [
-			"dev.echoliminal.client.EchoLiminalClient"
+			"dev.blendermc.client.BlenderMcClient"
 		]
 	},
 	"mixins": [
-		"echoliminal.mixins.json",
+		"blendermc.mixins.json",
 		{
-			"config": "echoliminal.client.mixins.json",
+			"config": "blendermc.client.mixins.json",
 			"environment": "client"
 		}
 	],

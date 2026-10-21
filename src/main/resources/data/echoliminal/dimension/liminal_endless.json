@@ -1,7 +1,0 @@
-{
-  "type": "echoliminal:liminal_endless",
-  "generator": {
-    "type": "echoliminal:endless",
-    "biome": "minecraft:the_void"
-  }
-}
