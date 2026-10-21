@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "echoliminal:block/offset_block"
+    }
+  }
+}

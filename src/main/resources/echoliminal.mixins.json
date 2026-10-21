@@ -1,0 +1,19 @@
+{
+	"required": true,
+	"package": "dev.echoliminal.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"mixins": [
+		"LiminalChunkMixin",
+		"LiminalEntityMixin",
+		"LiminalServerMoveCheckMixin",
+		"LiminalSignTextMixin",
+		"LiminalTriangleCollisionsMixin",
+		"LiminalUseItemOnMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	},
+	"overwrites": {
+		"requireAnnotations": true
+	}
+}

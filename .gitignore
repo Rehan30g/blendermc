@@ -1,0 +1,24 @@
+# Gradle / Loom
+.gradle/
+build/
+out/
+*.class
+
+# dev game folder (worlds, configs, logs) and temp
+run/
+.tmp/
+logs/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+bin/
+
+# Blender autosave copies
+*.blend1
+*.blend2
+
+# Python
+__pycache__/
+*.pyc

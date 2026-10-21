@@ -1,0 +1,31 @@
+{
+	"schemaVersion": 1,
+	"id": "echoliminal",
+	"version": "${version}",
+	"name": "Echoliminal",
+	"description": "Liminal levels made from 3D models instead of blocks, and an endless liminal world.",
+	"authors": [],
+	"license": "All-Rights-Reserved",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"dev.echoliminal.EchoLiminal"
+		],
+		"client": [
+			"dev.echoliminal.client.EchoLiminalClient"
+		]
+	},
+	"mixins": [
+		"echoliminal.mixins.json",
+		{
+			"config": "echoliminal.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.19.5",
+		"minecraft": "~1.21.11",
+		"java": ">=21",
+		"fabric-api": "*"
+	}
+}

@@ -1,0 +1,17 @@
+// Only used when Echoliminal is built on its own (cloned by itself). Inside D:\JAVAMODS the parent build includes
+// this folder as a subproject and this file is not read.
+pluginManagement {
+	repositories {
+		maven {
+			name = 'Fabric'
+			url = 'https://maven.fabricmc.net/'
+		}
+		mavenCentral()
+		gradlePluginPortal()
+	}
+	plugins {
+		id 'net.fabricmc.fabric-loom-remap' version providers.gradleProperty('loom_version').get()
+	}
+}
+
+rootProject.name = 'echoliminal'
