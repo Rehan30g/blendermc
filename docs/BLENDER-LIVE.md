@@ -17,10 +17,13 @@ While Blender is connected the game does not pause when its window loses focus (
 
 ## Blender to the game
 
-- Every visible, renderable mesh, curve, text or metaball object is sent after its modifiers. Only objects whose result changed are sent again.
+- Every visible, renderable mesh, curve, text, metaball or grease pencil object is sent after its modifiers. Only objects whose result changed are sent again.
 - The game rebuilds the cells around what changed and re-bakes the lighting in the background; the old version stays on screen until the new one is ready. On a small level an edit reaches the game in about 0.02–0.13 s, plus 0.4–0.6 s of baking.
 - Scale and naming: 1 m = 1 block, Z up. Materials ending in `_sky` are drawn as a skybox around the eye, `_nocollide` have no collision, `_thin` have no solid behind them. Materials named with "light" or with emission glow. An empty named `spawn` is where the player enters (looking along its local -Y); an empty named `sun` sets the sun direction (its local -Z).
 - Scene custom properties are level settings: `sky_color`, `fog_color`, `fog_start`, `fog_end`, `time_of_day`, `sun_visible`, `skylight`, `unlit`, `day_cycle`, `day_length`.
+- **Grease pencil** objects are sent as they look at the current frame, modifiers included: each stroke becomes a thin tube following its points' radius, each fill a flat polygon, in the material's stroke or fill colour (layer tint applied). In the game they are drawn full bright like in Blender, have no collision and give no light. Changing the frame sends them again, so an animated drawing plays in the game along with Blender's timeline. Blender 5.2 reports every grease pencil material's Stroke/Fill switches as off, so the stroke decides instead: fill-only and closed strokes are filled.
+- Plain material colours (no texture) are converted from Blender's linear values to what the viewport shows.
+- Materials with `_flat` in the name are drawn full bright and light nothing (no light blocks, not a lamp in the bake).
 - Not sent: the `AIR_cutters` collection, anything disabled in renders, and the `MC_*` collections the game writes into.
 - **Drop outside** (panel button, or custom property `drop_outside` on the object): for a solid block carved from inside, skip the faces on its bounding box, which are never seen.
 - **Draft lighting** sends `unlit` so the game skips the light bake while you move things around.

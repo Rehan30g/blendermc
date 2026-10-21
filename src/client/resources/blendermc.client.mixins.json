@@ -13,7 +13,8 @@
 		"LiminalLightMixin",
 		"LiminalSkyRendererMixin",
 		"LivingEntityRendererInvoker",
-		"RaftRendererAccessor"
+		"RaftRendererAccessor",
+		"WorldOpenFlowsMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

@@ -39,6 +39,14 @@ public record LiminalMesh(
 			return isThin(this.name, this.emissive, this.collides);
 		}
 
+		/**
+		 * Flat colour ("_flat" in the name, e.g. Blender grease pencil): drawn full bright like an emissive surface, but
+		 * it lights nothing (no light blocks, not a lamp in the bake).
+		 */
+		public boolean flat() {
+			return this.name.toLowerCase(java.util.Locale.ROOT).contains("_flat");
+		}
+
 		public static boolean isThin(String name, boolean emissive, boolean collides) {
 			return emissive || !collides || name.toLowerCase(java.util.Locale.ROOT).endsWith("_thin");
 		}

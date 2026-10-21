@@ -731,13 +731,21 @@ public final class GlbLoader {
 				png = this.texturePng(texture.get("index").getAsInt());
 			}
 		}
-		boolean emissive = materialName.toLowerCase(Locale.ROOT).contains("light");
-		JsonArray emissiveFactor = array(m, "emissiveFactor");
+		if (png == null) {
+			// glTF colour factors are linear; the game draws in sRGB, so a plain colour shows as in Blender's viewport.
+			for (int i = 0; i < 3; i++) {
+				color[i] = linearToSrgb(color[i]);
+			}
+		}
+		// "light" in the name makes a lamp panel, except on flat materials (a grease pencil "Skin_light" is just a colour).
+		boolean flat = materialName.toLowerCase(Locale.ROOT).contains("_flat");
+		boolean emissive = !flat && materialName.toLowerCase(Locale.ROOT).contains("light");
+		JsonArray emissiveFactor = flat ? new JsonArray() : array(m, "emissiveFactor");
 		for (JsonElement e : emissiveFactor) {
 			emissive |= e.getAsFloat() > 0;
 		}
 		JsonObject extensions = m.getAsJsonObject("extensions");
-		if (extensions != null) {
+		if (extensions != null && !flat) {
 			JsonObject strength = extensions.getAsJsonObject("KHR_materials_emissive_strength");
 			if (strength != null && strength.has("emissiveStrength") && strength.get("emissiveStrength").getAsFloat() > 0) {
 				emissive = true;
@@ -746,6 +754,11 @@ public final class GlbLoader {
 		}
 		boolean collides = !materialName.toLowerCase(Locale.ROOT).endsWith("_nocollide");
 		return new LiminalMesh.Material(materialName, color, png, emissive, collides);
+	}
+
+	private static float linearToSrgb(float c) {
+		c = Math.clamp(c, 0.0F, 1.0F);
+		return c <= 0.0031308F ? c * 12.92F : (float) (1.055 * Math.pow(c, 1.0 / 2.4) - 0.055);
 	}
 
 	/** The texture's image as PNG bytes (JPEG and other ImageIO formats are re-encoded), or null. */

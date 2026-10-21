@@ -116,7 +116,7 @@ final class LiminalMeshBaker {
 
 		private boolean emissive(int o) {
 			int m = this.vertexMat[o];
-			return m < this.mesh.materials().size() && this.mesh.materials().get(m).emissive();
+			return m < this.mesh.materials().size() && (this.mesh.materials().get(m).emissive() || this.mesh.materials().get(m).flat());
 		}
 
 		/** Index bytes and ranges with only the triangles whose cell passes {@code visible}. The caller frees the buffer. */
@@ -237,7 +237,7 @@ final class LiminalMeshBaker {
 		long finish(int o) {
 			LiminalMesh.Material mat = this.vertexMat[o] < this.mesh.materials().size() ? this.mesh.materials().get(this.vertexMat[o]) : null;
 			float[] base = baseColor(mat);
-			if (mat != null && mat.emissive()) {
+			if (mat != null && (mat.emissive() || mat.flat())) {
 				return pack(unitInt(base[0]), unitInt(base[1]), unitInt(base[2]), FULL, FULL);
 			}
 			if (this.sky.unlit()) {

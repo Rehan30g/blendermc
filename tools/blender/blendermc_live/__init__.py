@@ -47,6 +47,7 @@ import zlib
 
 import bpy
 import bmesh
+import mathutils
 import numpy as np
 from mathutils import Matrix, Vector
 
@@ -56,6 +57,9 @@ MIRROR = "MC_LIVE"
 AXIS = Matrix(((1, 0, 0, 0), (0, 0, 1, 0), (0, -1, 0, 0), (0, 0, 0, 1)))
 AXIS_INV = AXIS.inverted()
 MESHLIKE = {"MESH", "CURVE", "SURFACE", "FONT", "META"}
+GREASE_PENCIL = {"GREASEPENCIL", "GPENCIL"}
+# Thinner strokes than this (blocks) would vanish in the game.
+GP_MIN_RADIUS = 0.004
 TICK = 0.05
 # At most one batch this often while something keeps changing (dragging), and never before the game applied the last.
 THROTTLE = 0.12
@@ -288,8 +292,137 @@ class Glb:
 		return bytes(out)
 
 
+def gp_color(base, tint, factor):
+	return tuple(base[i] * (1.0 - factor) + tint[i] * factor for i in range(3))
+
+
+def gp_glb(obj, depsgraph):
+	"""
+	A grease pencil object as a .glb, as drawn at the current frame (modifiers applied): every stroke a thin tube
+	following its points' radius, every fill a flat polygon. Materials end in "_flat_nocollide": the game draws them
+	full bright like Blender does, lets the player walk through them and makes no light from them.
+	"""
+	ev = obj.evaluated_get(depsgraph)
+	glb = Glb()
+	glb.json["nodes"] = [{"name": obj.name}]
+	glb.json["scenes"] = [{"nodes": [0]}]
+	glb.json["scene"] = 0
+	slots = ev.material_slots
+	groups = {}  # material name -> (colour, [positions], [normals], [indices])
+
+	def group(name, color):
+		if name not in groups:
+			groups[name] = (color, [], [], [])
+		return groups[name]
+
+	for layer in ev.data.layers:
+		if layer.hide:
+			continue
+		frame = layer.current_frame()
+		if frame is None or frame.drawing is None:
+			continue
+		drawing = frame.drawing
+		matrix = AXIS @ ev.matrix_world @ layer.matrix_local
+		rot = np.array(matrix.to_3x3(), np.float64)
+		move = np.array(matrix.translation, np.float64)
+		scale = (abs(matrix.to_3x3().determinant()) ** (1.0 / 3.0)) or 1.0
+		tint = tuple(layer.tint_color)[:3]
+		tint_factor = float(layer.tint_factor)
+		for stroke in drawing.strokes:
+			points = stroke.points
+			n = len(points)
+			if n == 0:
+				continue
+			pos = np.array([pt.position[:] for pt in points], np.float64) @ rot.T + move
+			mat = slots[stroke.material_index].material if 0 <= stroke.material_index < len(slots) else None
+			settings = mat.grease_pencil if mat is not None and mat.is_grease_pencil else None
+			if settings is not None and settings.hide:
+				continue
+			# Blender 5.2 reports show_stroke / show_fill as False on every material: then the stroke itself decides
+			# (a fill-only stroke has hide_stroke set; a closed stroke is filled).
+			flags = settings is not None and (settings.show_stroke or settings.show_fill)
+			draw_line = not stroke.hide_stroke and (settings.show_stroke if flags else True)
+			draw_fill = n >= 3 and ((settings.show_fill if flags else (stroke.hide_stroke or stroke.cyclic)) if settings is not None else False)
+			base = mat.name if mat is not None else "grease_pencil"
+			if draw_fill:
+				fill = tuple(settings.fill_color)[:3] if settings is not None else (1.0, 1.0, 1.0)
+				fill = gp_color(fill, tint, tint_factor)
+				positions, normals, indices = group(f"{base}_fill_flat_nocollide", fill)[1:]
+				tris = mathutils.geometry.tessellate_polygon([[Vector(v) for v in pos]])
+				if tris:
+					normal = np.zeros(3)
+					for i in range(n):
+						a, b = pos[i], pos[(i + 1) % n]
+						normal += np.cross(a, b)
+					length = np.linalg.norm(normal)
+					normal = normal / length if length > 1e-9 else np.array([0.0, 1.0, 0.0])
+					start = len(positions)
+					positions.extend(pos.tolist())
+					normals.extend([normal.tolist()] * n)
+					for tri in tris:
+						indices.extend(start + k for k in tri)
+			if draw_line and n >= 2:
+				color = tuple(settings.color)[:3] if settings is not None else (0.0, 0.0, 0.0)
+				color = gp_color(color, tint, tint_factor)
+				positions, normals, indices = group(f"{base}_stroke_flat_nocollide", color)[1:]
+				radius = np.array([max(pt.radius * scale, GP_MIN_RADIUS) for pt in points], np.float64)
+				tube(pos, radius, bool(stroke.cyclic), positions, normals, indices)
+	if not groups:
+		return glb.finish()
+	primitives = []
+	glb.json["materials"] = []
+	for name, (color, positions, normals, indices) in groups.items():
+		if not indices:
+			continue
+		glb.json["materials"].append({"name": name, "pbrMetallicRoughness": {"baseColorFactor": [float(c) for c in color] + [1.0]}})
+		pos = np.array(positions, np.float32)
+		primitives.append({
+			"attributes": {"POSITION": glb.accessor(pos, "VEC3", 5126, bounds=True),
+				"NORMAL": glb.accessor(np.array(normals, np.float32), "VEC3", 5126),
+				"TEXCOORD_0": glb.accessor(np.zeros((len(pos), 2), np.float32), "VEC2", 5126)},
+			"indices": glb.accessor(np.array(indices, np.uint32), "SCALAR", 5125),
+			"material": len(glb.json["materials"]) - 1,
+		})
+	if primitives:
+		glb.json["meshes"] = [{"name": obj.name, "primitives": primitives}]
+		glb.json["nodes"][0]["mesh"] = 0
+	return glb.finish()
+
+
+def tube(pos, radius, cyclic, positions, normals, indices):
+	"""A square tube along the points (glTF axes): four vertices around each point, the frame carried along the stroke."""
+	n = len(pos)
+	if cyclic:
+		pos = np.concatenate([pos, pos[:1]])
+		radius = np.concatenate([radius, radius[:1]])
+		n += 1
+	tangents = np.gradient(pos, axis=0)
+	lengths = np.linalg.norm(tangents, axis=1, keepdims=True)
+	tangents = np.where(lengths > 1e-9, tangents / np.maximum(lengths, 1e-9), np.array([1.0, 0.0, 0.0]))
+	up = np.array([0.0, 1.0, 0.0]) if abs(tangents[0][1]) < 0.9 else np.array([1.0, 0.0, 0.0])
+	side = np.cross(tangents[0], up)
+	side /= np.linalg.norm(side)
+	start = len(positions)
+	for i in range(n):
+		t = tangents[i]
+		side = side - np.dot(side, t) * t
+		length = np.linalg.norm(side)
+		side = side / length if length > 1e-9 else np.cross(t, up) / max(np.linalg.norm(np.cross(t, up)), 1e-9)
+		other = np.cross(t, side)
+		for direction in (side, other, -side, -other):
+			positions.append((pos[i] + direction * radius[i]).tolist())
+			normals.append(direction.tolist())
+	for i in range(n - 1):
+		a, b = start + i * 4, start + (i + 1) * 4
+		for k in range(4):
+			k2 = (k + 1) % 4
+			indices.extend((a + k, b + k, b + k2, a + k, b + k2, a + k2))
+
+
 def object_glb(obj, depsgraph):
 	"""One object as a .glb: world transform baked in (glTF axes), one primitive per material slot."""
+	if obj.type in GREASE_PENCIL:
+		return gp_glb(obj, depsgraph)
 	ev = obj.evaluated_get(depsgraph)
 	glb = Glb()
 	me = ev.to_mesh()
@@ -479,7 +612,7 @@ def light_level(obj):
 
 
 def exported(obj, view_layer):
-	if obj.type not in MESHLIKE or obj.hide_render or in_mirror(obj):
+	if (obj.type not in MESHLIKE and obj.type not in GREASE_PENCIL) or obj.hide_render or in_mirror(obj):
 		return False
 	if not visible(obj, view_layer):
 		return False
@@ -582,6 +715,16 @@ def on_depsgraph(scene, depsgraph):
 		elif isinstance(idb, bpy.types.World):
 			S.scene_dirty = True
 		S.last_change = time.monotonic()
+
+
+@bpy.app.handlers.persistent
+def on_frame(scene, depsgraph=None):
+	"""Timeline moved: grease pencil drawings change with the frame, send them again (animated drawings play in the game)."""
+	if not S.ready:
+		return
+	for obj in scene.objects:
+		if obj.type in GREASE_PENCIL:
+			S.dirty.add(obj.name)
 
 
 def sync(scene):
@@ -1970,12 +2113,16 @@ def register():
 	bpy.types.Scene.blendermc = bpy.props.PointerProperty(type=BlenderMCProps)
 	if on_depsgraph not in bpy.app.handlers.depsgraph_update_post:
 		bpy.app.handlers.depsgraph_update_post.append(on_depsgraph)
+	if on_frame not in bpy.app.handlers.frame_change_post:
+		bpy.app.handlers.frame_change_post.append(on_frame)
 
 
 def unregister():
 	disconnect()
 	if on_depsgraph in bpy.app.handlers.depsgraph_update_post:
 		bpy.app.handlers.depsgraph_update_post.remove(on_depsgraph)
+	if on_frame in bpy.app.handlers.frame_change_post:
+		bpy.app.handlers.frame_change_post.remove(on_frame)
 	del bpy.types.Scene.blendermc
 	for cls in reversed(CLASSES):
 		bpy.utils.unregister_class(cls)

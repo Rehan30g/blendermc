@@ -8,6 +8,7 @@ Side project, nothing serious. Most of the code was written with Claude Opus 5.5
 
 Blender to the game:
 - mesh objects after their modifiers, with materials and textures
+- grease pencil drawings (strokes and fills, animated with the timeline)
 - lights, with their colour, as real light in the game
 - the World as the sky (plain colour or a small HDRI skybox)
 - the viewport camera, shown in the game as a marker
