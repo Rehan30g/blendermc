@@ -1,33 +1,37 @@
 # blendermc
 
-Fabric mod for Minecraft 1.21.11. Levels made of meshes instead of blocks, an endless generated world, and a live link to Blender.
+Fabric mod for Minecraft 1.21.11 that links the game to a running Blender. The scene open in Blender is a level in the game, rebuilt as you edit it, and what happens in the game shows up in Blender.
 
-Side project, nothing serious. I wanted to know if a Minecraft level could just be a Blender model, and it kept growing from there. Most of the code was written with Claude Opus 5.5 in Claude Code. Expect rough edges.
+Side project, nothing serious. Most of the code was written with Claude Opus 5.5 in Claude Code. Expect rough edges.
 
-## What it does
+## What goes across
 
-**Mesh levels.** The `blendermc:liminal` dimension loads `.glb` files exported from Blender (1 m = 1 block). Collision is per triangle, cells can be broken and placed back like blocks, and lighting is baked on the CPU. Built-in levels: `hallway`, `map79`, `room`. See [docs/CUSTOM-WORLD.md](docs/CUSTOM-WORLD.md) for making your own.
+Blender to the game:
+- mesh objects after their modifiers, with materials and textures
+- lights, with their colour, as real light in the game
+- the World as the sky (plain colour or a small HDRI skybox)
+- the viewport camera, shown in the game as a marker
 
-**Endless world.** `blendermc:liminal_endless` generates hallways forever.
+The game to Blender:
+- the player, mobs and boats, animated
+- placed blocks with their real models, signs with their text
+- dropped items, TNT and its explosion, falling blocks, held items
+- light-emitting blocks as lights
+- cells broken in the game, cut out of the Blender objects
 
-**Blender live link.** The scene open in Blender becomes a level in the game and updates while you edit. It works both ways:
+Levels are meshes, not blocks: collision is per triangle, cells can be broken and placed back, and lighting is baked on the CPU.
 
-- Blender to game: meshes (after modifiers), materials, lights including their colour, the World as the sky, and the viewport camera (shown as a marker in the game).
-- Game to Blender: the player, mobs and boats with their animation, placed blocks with their real models, dropped items, TNT, falling blocks, held items, signs, light-emitting blocks as lights, and cells broken in the game cut out of the Blender objects.
-
-Details and the wire protocol are in [docs/BLENDER-LIVE.md](docs/BLENDER-LIVE.md).
+How it works, every option, and the wire protocol: [docs/BLENDER-LIVE.md](docs/BLENDER-LIVE.md).
 
 ## Running it
 
-Java 21. Blender 5.2 for the live link.
+Java 21 and Blender 5.2.
 
 ```
 gradlew runLiminalClient
 ```
 
-In any world run `/blendermc enter hallway`. `-PquickPlay=<world folder>` opens a world on launch.
-
-Blender add-on: copy `tools/blender/blendermc_live` into `%APPDATA%\Blender Foundation\Blender\5.2\scripts\addons\` and enable it. Then open the 3D view sidebar (N), go to the BlenderMC tab, and click Connect. Restart Blender after updating the add-on; the panel shows its version and the game warns if it is outdated.
+Install the add-on by copying `tools/blender/blendermc_live` into `%APPDATA%\Blender Foundation\Blender\5.2\scripts\addons\` and enabling it. Open a world in the game, then in Blender's 3D view sidebar (N), BlenderMC tab, click Connect and then Put player in level. Restart Blender after updating the add-on.
 
 On my machine this folder sits inside a bigger Gradle build so the Minecraft cache is shared. Cloned on its own, `settings.gradle` and `gradle.properties` make it a standalone build.
 
@@ -35,33 +39,24 @@ On my machine this folder sits inside a bigger Gradle build so the Minecraft cac
 
 ```
 src/main/java/dev/blendermc/
-  liminal/         .glb loading, cells, collision, light baking
-  endless/         endless world generator
-  live/            Blender link: socket server, scenes built from Blender
+  live/            the link: socket server, levels built from Blender
+  liminal/         mesh levels: loading, cells, collision, light baking
 src/client/java/dev/blendermc/
-  liminal/client/  mesh renderer and baker
   client/          what the client sends to Blender (block models, entities, items)
-tools/
-  blender/blendermc_live/  Blender add-on
-  liminal/                 scripts and .blend files for the built-in levels
-docs/
+  liminal/client/  mesh renderer and baker
+tools/blender/blendermc_live/  the Blender add-on
+docs/BLENDER-LIVE.md
 ```
-
-Dev tasks: `glbCheck`, `cutCheck`, `endlessExport`, `liveSceneCheck`, and `runLiminalServer` (a headless server for testing the link without a game window).
 
 ## Limitations
 
-- The live link only runs in a dev environment, in singleplayer, on localhost.
-- Levels built from Blender are hollow. A broken cell is just a hole.
-- Light colour only affects the level mesh. Entities and vanilla blocks still use the vanilla lightmap.
-- Held items use an approximate pose, not each item's own display transform.
-- Signs in Blender use Blender's default font.
-- Animated block textures show their first frame in Blender.
+- Development environment, singleplayer and localhost only.
+- Light colour affects the level mesh only; entities and vanilla blocks use the vanilla lightmap.
+- Held items use an approximate pose.
+- Signs use Blender's default font; animated textures show their first frame.
 
 ## Credits
 
 Code mostly by Claude Opus 5.5 (Claude Code); ideas and testing by me. Built on Fabric, Fabric API, Sodium and Mod Menu.
-
-The textures in `tools/liminal/map79_textures` and `tools/liminal/room_textures` come from third-party downloads and scans. That is one reason this repo is private.
 
 No license. All rights reserved.

@@ -1,82 +1,80 @@
-# Blender Live: dunia Blender dan Minecraft yang menyatu
+# The Blender link
 
-Scene Blender yang sedang kamu edit menjadi level liminal di game secara realtime. Hasil di game juga kembali ke Blender: pemain, blok yang dipasang, potongan mesh, dan lubang yang digali.
+The scene open in Blender is a level in the game, rebuilt as you edit it. What happens in the game comes back into Blender.
 
-Link hanya aktif di dev (`runLiminalClient`). Di luar dev, aktifkan dengan `-Dblendermc.live=true`. Port default `47660` (`-Dblendermc.live.port`), dan hanya menerima koneksi dari `127.0.0.1`.
+The link runs in a development environment (`runLiminalClient`); elsewhere start the game with `-Dblendermc.live=true`. It listens on `127.0.0.1:47660` (change with `-Dblendermc.live.port`) and accepts one Blender at a time.
 
-## Mulai
+## Setup
 
-1. `gradlew.bat runLiminalClient`, lalu buka world apa saja. Dengan `-PquickPlay=<folder world>`, world langsung terbuka.
-2. Di Blender 5.2, buka sidebar 3D View (N), tab **BlenderMC**. Add-on sudah terpasang: `%APPDATA%\Blender Foundation\Blender\5.2\scripts\addons\blendermc_live` adalah junction ke `tools/blender/blendermc_live`, jadi mengedit file di repo langsung berlaku setelah restart Blender.
-3. Isi **Level** (huruf kecil, angka, `_` atau `-`), lalu klik **Connect**.
-4. Klik **Put player in level**. Pemain di-teleport ke empty `spawn`.
+1. `gradlew runLiminalClient` and open any world (`-PquickPlay=<world folder>` opens one on launch).
+2. Install the add-on: put `tools/blender/blendermc_live` in `%APPDATA%\Blender Foundation\Blender\5.2\scripts\addons\` (a junction works, so edits in the repo apply after restarting Blender) and enable it.
+3. In the 3D view sidebar (N), BlenderMC tab: set **Level** (lowercase letters, digits, `_`, `-`) and click **Connect**.
+4. Click **Put player in level**. The player is teleported to the `spawn` empty. If nobody has joined the world yet, it happens when they do.
 
-Kode add-on hanya dimuat saat Blender start. Setelah mod atau add-on diperbarui, **restart Blender**. Panel menampilkan versi add-on, dan game memberi peringatan kalau add-on yang terhubung sudah ketinggalan.
+Blender loads add-on code only at startup, so restart it after updating. The panel shows the add-on version and the game reports an outdated add-on.
 
-Selama Blender terhubung, game tidak auto-pause saat kehilangan fokus. Kalau pause, dunia berhenti dan tidak ada yang tercermin. Setelan kembali seperti semula saat link putus.
+While Blender is connected the game does not pause when its window loses focus (a paused singleplayer world stops sending anything). The setting is restored when the link closes.
 
-## Blender ke game
+## Blender to the game
 
-- Setiap objek mesh, curve, teks, atau metaball yang terlihat dan ikut render dikirim **setelah modifier** (Boolean, Array, dll.). Hanya objek yang berubah yang dikirim ulang (dibandingkan lewat hash).
-- Game hanya membangun ulang sel di area objek yang berubah. Lighting di-bake ulang di belakang layar, dan versi lama tetap tampil sampai yang baru siap, jadi tidak ada kedip. Pada hallway, satu edit memakan sekitar 0,02–0,13 detik sampai game menerimanya, ditambah bake 0,4–0,6 detik.
-- Aturan sama dengan file `.glb`: 1 m = 1 blok, Z ke atas, material `_sky` / `_nocollide` / `_thin`, material berisi "light" atau ber-emission menyala, empty `spawn` dan `sun`, dan custom property scene (`sky_color`, `fog_*`, `time_of_day`, `stone_fill`, `unlit`, `day_cycle`, ...).
-- Koleksi `AIR_cutters`, objek atau koleksi dengan *Disable in Renders*, dan semua koleksi `MC_*` tidak dikirim.
-- **Drop outside**: untuk balok padat yang dilubangi dari dalam (seperti `level_shell`), sisi luarnya tidak pernah terlihat. Klik tombol di panel (custom property `drop_outside`) supaya sisi itu tidak dikirim.
-- **Draft lighting**: mengirim `unlit` sementara, sehingga game melewati bake. Cocok saat banyak menggeser; matikan untuk melihat hasil asli.
-- **Level live selalu kosong di dalam:** tidak ada batu pengisi dan tidak ada dinding batu (cut faces) di sel yang dibobol, apa pun nilai `stone_fill` di scene. Sel yang dirusak di game menjadi lubang polos.
-- **Lampu:** light Point, Spot, dan Area di Blender menjadi blok `minecraft:light` sungguhan di game. Lampu ini menerangi pemain, mob, dan blok, dan ikut di-bake ke mesh. Levelnya dihitung dari power (1000 W = 15, 250 W = 8; rumus 15·√(W/1000)), atau dari custom property `mc_level` (1–15) pada objek light. Light **Sun** menjadi arah matahari level, kecuali sudah ada empty `sun`. Warna lampu tidak ikut, karena cahaya blok Minecraft selalu putih.
-- Level live disimpan di `run/config/blendermc/live/<level>/` dan tetap ada walaupun Blender tidak terbuka. Ia juga muncul di `/blendermc enter`.
+- Every visible, renderable mesh, curve, text or metaball object is sent after its modifiers. Only objects whose result changed are sent again.
+- The game rebuilds the cells around what changed and re-bakes the lighting in the background; the old version stays on screen until the new one is ready. On a small level an edit reaches the game in about 0.02–0.13 s, plus 0.4–0.6 s of baking.
+- Scale and naming: 1 m = 1 block, Z up. Materials ending in `_sky` are drawn as a skybox around the eye, `_nocollide` have no collision, `_thin` have no solid behind them. Materials named with "light" or with emission glow. An empty named `spawn` is where the player enters (looking along its local -Y); an empty named `sun` sets the sun direction (its local -Z).
+- Scene custom properties are level settings: `sky_color`, `fog_color`, `fog_start`, `fog_end`, `time_of_day`, `sun_visible`, `skylight`, `unlit`, `day_cycle`, `day_length`.
+- Not sent: the `AIR_cutters` collection, anything disabled in renders, and the `MC_*` collections the game writes into.
+- **Drop outside** (panel button, or custom property `drop_outside` on the object): for a solid block carved from inside, skip the faces on its bounding box, which are never seen.
+- **Draft lighting** sends `unlit` so the game skips the light bake while you move things around.
+- Levels from Blender are hollow: no filler stone, and a cell broken in the game is just a hole.
+- **Lights.** Point, spot and area lights become real `minecraft:light` blocks, so they light the player, mobs and blocks as well as the level. The light level comes from the power (1000 W = 15, 250 W = 8: 15·√(W/1000)) or from an `mc_level` custom property (1–15). Their colour tints the level mesh around them. A sun light sets the sun direction unless there is a `sun` empty.
+- Light on the level mesh is computed like the vanilla lightmap but without its warm tint, so white surfaces stay white.
+- **Sky.** The World is the sky: a plain colour (Blender's default grey included) becomes the sky and fog colour; an environment texture is scaled down to 256×128 and sent as a skybox, and its average colour becomes the sky and fog colour. `sky_color` / `fog_color` scene properties take precedence.
+- **Camera.** The first 3D viewport's view is sent ten times a second and shown in the game as a glowing observer labelled "Blender". Toggle with **Show camera in game**; nothing is sent while you look through the player's eyes.
+- The level is saved in `run/config/blendermc/live/<level>/`, so it is still there when Blender is closed, and `/blendermc enter <level>` works for it.
 
-## Langit dan kamera
+## The game to Blender
 
-- **World Blender menjadi langit game.** Warna polos (termasuk abu-abu default Blender) dipakai sebagai `sky_color` dan `fog_color`. Environment Texture (HDRI) diperkecil ke 256×128 dan dikirim sebagai skybox; warna rata-ratanya menjadi warna langit dan kabut. Custom property `sky_color`/`fog_color` di scene tetap diutamakan, jadi hapus property itu kalau ingin mengikuti World.
-- **Game bisa melihat kamera Blender.** Viewport 3D pertama dikirim 10 kali per detik dan tampil di game sebagai observer menyala oranye berlabel "Blender" yang bergerak halus. Matikan dengan **Show camera in game**. Saat kamu melihat lewat mata pemain (**Eyes**), penandanya tidak dikirim.
+Everything goes into the `MC_LIVE` collection and is never sent back.
 
-## Game ke Blender (koleksi `MC_LIVE`, tidak pernah dikirim balik)
-
-| Objek | Isi |
+| Object or collection | What it is |
 |---|---|
-| `MC_Things` | item drop (berputar dan naik-turun), TNT yang menyala (membesar sebelum meledak) dan falling block |
-| `MC_Held` | item di tangan pemain dan mob (blok sebagai blok kecil, item lain sebagai teksturnya) |
-| `MC_Effects` | ledakan TNT: bola api dan kilatan cahaya selama 0,6 detik |
-| `MC_Entities` | pemain, mob, dan boat/raft di level: model dan skin asli, beranimasi sinkron dengan game (vertex yang dipose game setiap tick, termasuk jalan, kepala, dan tangan) |
-| `MC_Eye` | kamera di mata pemain (FOV 70). Tombol **Eyes** menjadikannya kamera scene, sehingga kamu melihat persis apa yang dilihat pemain. |
-| `MC_Blocks` | blok yang dipasang di level dengan **model aslinya**: baked quads dari model JSON blok (termasuk resource pack), setiap sisi dengan teksturnya sendiri. Grass, daun, dan sejenisnya di-tint warna biome (tint dibakar ke salinan teksturnya, jadi terlihat di semua mode tampilan). Tangga, slab, obor, dan tanaman berbentuk sesuai modelnya. Blok bercahaya (obor, glowstone, lentera) juga mendapat point light `mcl_x_y_z`, dengan level 15 = 1000 W. Bloknya sendiri tidak memberi bayangan, supaya cahaya lampu di dalamnya bisa keluar. |
-| `MC_Pieces` | potongan mesh liminal yang dipasang kembali, berupa segitiga aslinya |
-| `MC_Cutters` | pemotong lubang (tersembunyi), satu per objek yang pernah kena |
+| `MC_Eye` | camera at the player's eyes (FOV 70). **Eyes** makes it the scene camera. |
+| `MC_Entities` | the player, mobs, boats and rafts: their own model and texture, posed by the game every tick |
+| `MC_Held` | items in their hands (block items as small blocks, other items as their texture) |
+| `MC_Blocks` | placed blocks with their real model (the game's baked quads, every face with its own texture, biome tint baked into a copy of the texture). Light-emitting blocks also get a point light (level 15 = 1000 W) and cast no shadow so that light gets out. Signs are built from their wood texture with their text, front and back, dye colour and glow. Animated textures show their first frame. |
+| `MC_Pieces` | mesh pieces placed back into the world, as their own triangles |
+| `MC_Things` | dropped items (spinning and bobbing), primed TNT (swelling before it goes off) and falling blocks |
+| `MC_Effects` | TNT explosions: a fireball and a flash for 0.6 s |
+| `MC_Cutters` | hidden hole cutters, one per object that has holes |
 
-**Sign** tampil dengan papan dari kayunya sendiri dan teks aslinya (depan dan belakang, warna dye, glow ink), lalu diperbarui setiap kali diedit di game. Blok animasi seperti sea lantern memakai frame pertama teksturnya.
+Mirrored objects render with F12, except the cutters. Duplicating a mirrored object (Shift+D) makes the copy a normal level object: it leaves `MC_*` and is sent to the game.
 
-Semua objek cermin ikut ter-render (F12), kecuali pemotong lubang. Kalau kamu menduplikasi objek cermin (Shift+D pada blok, potongan, atau mob), salinannya otomatis keluar dari `MC_*` dan menjadi objek level yang dikirim ke game.
+**Holes.** When a cell is broken in the game, every object that has geometry in that cell at that moment gets a Geometry Nodes modifier `MC holes` that cuts the cell out and removes the walls the Boolean adds, so the hole stays open as in the game. The cutter lives in the object's local space, so the hole moves with the object. Once the cut geometry has reached the game, the game forgets the broken cell, which means anything added there later is not cut. **Restore holes** removes all of it.
 
-**Mesh yang dihancurkan di game ikut hancur di Blender.** Begitu sel dirusak di game, setiap objek yang saat itu punya geometri di sel tersebut mendapat modifier Geometry Nodes `MC holes`. Modifier ini memotong sel itu dan menghapus dinding sisa Boolean, jadi lubangnya tetap terbuka seperti di game. Pemotongnya disimpan dalam koordinat lokal objek, jadi lubang ikut berpindah kalau objek digeser. Setelah geometri yang sudah bolong terkirim, game menghapus tanda "broken" untuk sel itu.
+Only real breaking counts (mining, explosions, `/setblock ... destroy`). Plain `/setblock` skips block entity side effects and is not seen as breaking.
 
-Akibatnya, **objek baru yang kamu taruh di bekas lubang tidak terpotong** dan langsung muncul di game. Tombol **Restore holes** mengembalikan semua lubang dengan menghapus modifier dan pemotongnya. Sisa dari versi lama (modifier Boolean `MC holes` dan wireframe `MC_Holes`) dihapus otomatis saat connect.
+## Protocol
 
-Lubang hanya tercatat kalau sel benar-benar dirusak (ditambang, TNT, `/setblock ... destroy`). `/setblock` biasa melewati efek samping block entity, sehingga tidak dihitung sebagai rusak oleh mod.
+Loopback TCP. Each frame: big-endian u32 header length, UTF-8 JSON header, big-endian u32 payload length, payload. Positions sent to Blender are glTF axes relative to the level origin. The game sends nothing until it has received `hello`.
 
-## Protokol (untuk tool lain)
-
-TCP loopback. Setiap frame: `u32 BE panjang header` + header JSON UTF-8 + `u32 BE panjang payload` + payload. Koordinat ke Blender memakai sumbu glTF, relatif terhadap origin level.
-
-| Arah | `t` | Isi |
+| Direction | `t` | Content |
 |---|---|---|
-| ke game | `hello` | `level` |
-| ke game | `object` / `remove` / `objects` | `name` + payload .glb satu objek / hapus / daftar lengkap |
-| ke game | `scene` | payload .glb tanpa mesh (extras + node `spawn`/`sun`) |
-| ke game | `commit` | bangun ulang sekarang; dijawab `applied` |
-| ke game | `enter`, `command` | teleport pemain ke level / jalankan command (permission penuh) |
-| ke Blender | `hello`, `applied`, `status` | origin level, statistik build, pesan |
-| ke Blender | `player` | `in`, `p`, `yaw`, `pitch`, `eye` (setiap 2 tick) |
-| ke Blender | `block` / `unblock` / `texture` | blok di sel `p` (`id`, `color`) / dihapus / PNG untuk `key` |
-| ke Blender | `piece` | sel `p`, `materials`, payload segitiga (25 float LE per segitiga) |
-| ke Blender | `hole` / `holes` | satu sel / semua sel lubang |
-| ke Blender | `blockmodel` | `key` (state), `quads` (`tex`, `tint`, `emissive`), payload 4 × (xyz + uv) float LE per quad |
-| ke game | `camera` / `camera_off` | posisi (`p`), `yaw`, `pitch` viewport Blender / sembunyikan penanda |
-| ke Blender | `explosion` | `p`, `r`: TNT meledak |
-| ke Blender | `entity_mesh` / `entities` | mesh entity (`id`, `type`, `tex`, `n`, payload UV) / pose tick ini (`list` [id, n], payload posisi xyz) |
+| to game | `hello` | `level`, `protocol` |
+| to game | `object` / `remove` / `objects` | `name` + one object as a .glb / remove it / the full list of names |
+| to game | `scene` | .glb with no meshes: scene extras and `spawn`, `sun`, `mc_light*` nodes |
+| to game | `commit` | rebuild now; answered with `applied` |
+| to game | `enter` / `command` | put the player in the level / run a command with full permission |
+| to game | `camera` / `camera_off` | viewport position `p`, `yaw`, `pitch` / hide the marker |
+| to Blender | `hello` / `applied` / `status` | level origin and protocol / build statistics / a message |
+| to Blender | `player` | `in`, `p`, `yaw`, `pitch`, `eye`, every 2 ticks |
+| to Blender | `block` / `unblock` / `texture` | block at cell `p` (`id`, `color`, `light`, `model`, `sign`) / removed / PNG for `key` |
+| to Blender | `blockmodel` | `key` (block state), `quads` (`tex`, `tint`, `emissive`); payload 4 × (xyz, uv) little-endian floats per quad |
+| to Blender | `piece` | cell `p`, `materials`; payload 25 little-endian floats per triangle |
+| to Blender | `hole` / `holes` | one cell / all broken cells |
+| to Blender | `entity_mesh` / `entities` | an entity's mesh (`id`, `type`, `tex`, `n`, UV payload) / this tick's poses (`list` of [id, n, held items], `things`, position payload) |
+| to Blender | `explosion` | `p`, `r` |
 
-## Dev tool
+## Dev tasks
 
-- `gradlew.bat :blendermc:liveSceneCheck -Pdir=<folder obj_*.glb + scene.glb> [-Pref=level.glb]`: membangun level seperti link live, lalu membandingkannya dengan `.glb` referensi.
-- `gradlew.bat runLiminalServer`: server headless di `.tmp/liminal-server` untuk menguji link tanpa jendela game.
+- `gradlew :blendermc:liveSceneCheck -Pdir=<folder with obj_*.glb and scene.glb> -Pref=<level.glb>` builds a level the way the link does and compares it with a reference export.
+- `gradlew :blendermc:glbCheck -Pglb=<file.glb>` prints what a .glb loads as and walks from its spawn.
+- `gradlew runLiminalServer` starts a headless server (in `.tmp/liminal-server`) to test the link without a game window.

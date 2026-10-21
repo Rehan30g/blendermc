@@ -3,8 +3,7 @@ package dev.blendermc.liminal;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Where the geometry of LEVEL cells comes from: a loaded .glb ({@link LiminalCells}) or the endless generator
- * ({@code dev.blendermc.endless.EndlessCells}). Cells are keyed by {@link net.minecraft.core.BlockPos#asLong}.
+ * Where the geometry of LEVEL cells comes from (a loaded level, {@link LiminalCells}). Cells are keyed by {@link net.minecraft.core.BlockPos#asLong}.
  */
 public interface CellSource {
 	/** Whether the level owns triangles in this cell. */

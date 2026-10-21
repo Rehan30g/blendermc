@@ -132,7 +132,7 @@ public final class LiminalRenderer {
 	}
 
 	private static boolean inLiminal(Minecraft mc) {
-		return mc.level != null && !dev.blendermc.endless.client.EndlessZones.isEndless(mc.level) && (ANYWHERE || LiminalLevels.isLiminal(mc.level));
+		return mc.level != null && (ANYWHERE || LiminalLevels.isLiminal(mc.level));
 	}
 
 	/** From the client level mixin: a block changed (render thread). */

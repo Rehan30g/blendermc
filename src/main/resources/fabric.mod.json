@@ -3,7 +3,7 @@
 	"id": "blendermc",
 	"version": "${version}",
 	"name": "BlenderMC",
-	"description": "Liminal levels made from 3D models instead of blocks, and an endless liminal world.",
+	"description": "Live link between Blender and Minecraft: the open Blender scene is a level in the game, and the game shows up in Blender.",
 	"authors": [],
 	"license": "All-Rights-Reserved",
 	"environment": "*",

@@ -95,7 +95,7 @@ tasks.register("glbCheck", JavaExec) {
 	classpath = sourceSets.test.runtimeClasspath
 	mainClass = "dev.blendermc.tools.GlbCheck"
 	jvmArgs "-Djava.io.tmpdir=${rootProject.file('.tmp').absolutePath}", "-Djava.awt.headless=true"
-	args = (project.findProperty("glb") ?: file("src/main/resources/assets/blendermc/liminal/hallway.glb").absolutePath).toString().split(";").toList()
+	args = (project.findProperty("glb") ?: "").toString().split(";").toList()
 }
 
 // Dev tool: counts the stone cut faces of a liminal level (nothing dug / one cell dug). -Pglb=path
@@ -103,22 +103,7 @@ tasks.register("cutCheck", JavaExec) {
 	classpath = sourceSets.test.runtimeClasspath
 	mainClass = "dev.blendermc.tools.CutCheck"
 	jvmArgs "-Djava.io.tmpdir=${rootProject.file('.tmp').absolutePath}", "-Djava.awt.headless=true"
-	args = [(project.findProperty("glb") ?: file("src/main/resources/assets/blendermc/liminal/hallway.glb").absolutePath).toString()]
-}
-
-// Dev tool: exports the generated endless world as a .glb for Blender and prints timings. -Pseed -Pregion=x,z -Pradius -Plod -Pout
-tasks.register("endlessExport", JavaExec) {
-	classpath = sourceSets.test.runtimeClasspath
-	mainClass = "dev.blendermc.tools.EndlessExport"
-	jvmArgs "-Djava.io.tmpdir=${rootProject.file('.tmp').absolutePath}", "-Djava.awt.headless=true", "-Xmx6g"
-	args = [
-		project.findProperty("seed") ?: "12345",
-		project.findProperty("region") ?: "0,0",
-		project.findProperty("radius") ?: "1",
-		project.findProperty("lod") ?: "0",
-		project.findProperty("out") ?: rootProject.file(".tmp/endless.glb").absolutePath,
-		"bench"
-	]
+	args = [(project.findProperty("glb") ?: "").toString()]
 }
 
 processResources {
@@ -148,5 +133,5 @@ tasks.register("liveSceneCheck", JavaExec) {
 	classpath = sourceSets.test.runtimeClasspath
 	mainClass = "dev.blendermc.live.LiveSceneCheck"
 	jvmArgs "-Djava.io.tmpdir=${rootProject.file('.tmp').absolutePath}", "-Djava.awt.headless=true"
-	args = [project.findProperty("dir") ?: "", project.findProperty("ref") ?: file("src/main/resources/assets/blendermc/liminal/hallway.glb").absolutePath]
+	args = [project.findProperty("dir") ?: "", project.findProperty("ref") ?: ""]
 }

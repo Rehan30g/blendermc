@@ -5,10 +5,6 @@
 	"client": [
 		"AbstractBoatRendererInvoker",
 		"BoatRendererAccessor",
-		"EndlessClientLevelMixin",
-		"EndlessDepthFarMixin",
-		"EndlessFogRendererMixin",
-		"EndlessSkyRendererMixin",
 		"LiminalAoMixin",
 		"LiminalAttributeProbeMixin",
 		"LiminalClientLevelMixin",

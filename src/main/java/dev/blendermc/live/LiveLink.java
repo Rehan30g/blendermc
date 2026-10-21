@@ -269,12 +269,17 @@ public final class LiveLink {
 		}
 	}
 
+	/** Blender asked to put the player in the level before anyone had joined: done as soon as someone has. */
+	private static boolean enterPending;
+
 	private static void enter(MinecraftServer s) {
 		String name = level;
 		List<ServerPlayer> players = s.getPlayerList().getPlayers();
 		if (name == null || players.isEmpty()) {
+			enterPending = name != null;
 			return;
 		}
+		enterPending = false;
 		ServerPlayer player = players.getFirst();
 		s.getCommands().performPrefixedCommand(player.createCommandSourceStack(), "blendermc enter " + name);
 	}
@@ -335,6 +340,9 @@ public final class LiveLink {
 		String name = level;
 		if (open == null || name == null || !open.greeted) {
 			return;
+		}
+		if (enterPending && !s.getPlayerList().getPlayers().isEmpty()) {
+			enter(s);
 		}
 		ServerLevel world = s.getLevel(LiminalLevels.DIMENSION);
 		ServerPlayer player = world == null ? null : playerIn(world, name);

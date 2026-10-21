@@ -33,7 +33,7 @@ public final class LiminalLevels {
 	/** Highest slot (keeps coordinates well inside the world border and float precision usable). */
 	public static final int MAX_SLOT = 255;
 	public static final ResourceKey<Level> DIMENSION = ResourceKey.create(Registries.DIMENSION, BlenderMc.id("liminal"));
-	public static final String DEFAULT_LEVEL = "hallway";
+	public static final String DEFAULT_LEVEL = "live";
 	public static final Logger LOGGER = LoggerFactory.getLogger("blendermc/liminal");
 
 	private static final Map<String, Optional<Loaded>> CACHE = new ConcurrentHashMap<>();
@@ -68,11 +68,8 @@ public final class LiminalLevels {
 		return loaded == null ? null : loaded.cells;
 	}
 
-	/** The geometry source of level {@code name}: the endless generator for "endless", else the loaded .glb's cells; null if missing. */
+	/** The geometry source of level {@code name}: its loaded cells, or null if missing. */
 	public static @Nullable CellSource cellSource(@Nullable String name) {
-		if (dev.blendermc.endless.Endless.LEVEL.equals(name)) {
-			return dev.blendermc.endless.EndlessCells.get();
-		}
 		return name == null ? null : cells(name);
 	}
 
@@ -274,9 +271,9 @@ public final class LiminalLevels {
 		return level != null && level.dimension() == DIMENSION;
 	}
 
-	/** Mesh physics and block placement rules apply: the liminal dimension or the endless one. */
+	/** Mesh physics and block placement rules apply (the liminal dimension). */
 	public static boolean hasMeshWorld(@Nullable Level level) {
-		return level != null && (level.dimension() == DIMENSION || level.dimension() == dev.blendermc.endless.Endless.DIMENSION);
+		return level != null && level.dimension() == DIMENSION;
 	}
 
 	/** Drops every cached level so the next access re-reads the .glb files. Bumps {@link #generation()}. */

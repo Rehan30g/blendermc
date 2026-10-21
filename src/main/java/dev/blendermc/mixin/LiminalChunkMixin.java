@@ -23,7 +23,7 @@ public abstract class LiminalChunkMixin {
 
 	@Inject(method = "setBlockState", at = @At("RETURN"))
 	private void blendermc$liminalBlockChanged(BlockPos pos, BlockState state, int flags, CallbackInfoReturnable<BlockState> cir) {
-		if (cir.getReturnValue() != null && this.level instanceof ServerLevel server && (server.dimension() == LiminalLevels.DIMENSION || server.dimension() == dev.blendermc.endless.Endless.DIMENSION)) {
+		if (cir.getReturnValue() != null && this.level instanceof ServerLevel server && server.dimension() == LiminalLevels.DIMENSION) {
 			LiminalWorld.blockChanged(server, pos, state);
 			if (server.dimension() == LiminalLevels.DIMENSION) {
 				dev.blendermc.live.LiveLink.blockChanged(server, pos, cir.getReturnValue(), state);

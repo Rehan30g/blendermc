@@ -74,7 +74,7 @@ public final class LiminalSky {
 	/** True when the client is in the liminal dimension. */
 	public static boolean active() {
 		ClientLevel level = Minecraft.getInstance().level;
-		return level != null && LiminalLevels.isLiminal(level) && !dev.blendermc.endless.client.EndlessZones.isEndless(level);
+		return level != null && LiminalLevels.isLiminal(level);
 	}
 
 	/**
@@ -101,7 +101,7 @@ public final class LiminalSky {
 	 * level, or no fog (start = end = MAX) when the level defines none; null outside the liminal dimension.
 	 */
 	public static float @Nullable [] fog(@Nullable Level level) {
-		if (!(level instanceof ClientLevel) || !LiminalLevels.isLiminal(level) || dev.blendermc.endless.client.EndlessZones.isEndless(level)) {
+		if (!(level instanceof ClientLevel) || !LiminalLevels.isLiminal(level)) {
 			return null;
 		}
 		LevelSky sky = LiminalLevels.activeSky();
@@ -398,7 +398,7 @@ public final class LiminalSky {
 	 * Called very often: cheap when not in the liminal dimension.
 	 */
 	public static @Nullable Object override(@Nullable Level level, EnvironmentAttribute<?> attribute) {
-		if (!(level instanceof ClientLevel) || !LiminalLevels.isLiminal(level) || dev.blendermc.endless.client.EndlessZones.isEndless(level)) {
+		if (!(level instanceof ClientLevel) || !LiminalLevels.isLiminal(level)) {
 			return null;
 		}
 		LevelSky sky = LiminalLevels.activeSky();

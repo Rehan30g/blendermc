@@ -104,7 +104,6 @@ public final class LiminalCommands {
 			for (String level : LiminalLevels.slots().keySet()) {
 				LiminalWorld.send(player, level);
 			}
-			dev.blendermc.endless.Endless.onJoin(server, player);
 			// A save from before levels were blocks (or a player who logged out inside): make sure the cells exist.
 			String here = player.level().dimension() == LiminalLevels.DIMENSION ? LiminalLevels.levelAt(player.blockPosition()) : null;
 			if (here != null && LiminalLevels.get(here) != null) {
@@ -162,7 +161,6 @@ public final class LiminalCommands {
 				.then(Commands.argument("level", StringArgumentType.word())
 					.suggests((context, builder) -> SharedSuggestionProvider.suggest(LiminalLevels.available(), builder))
 					.executes(context -> enter(context, StringArgumentType.getString(context, "level")))))
-			.then(Commands.literal("endless").executes(LiminalCommands::enterEndless))
 			.then(Commands.literal("leave").executes(LiminalCommands::leave))
 			.then(Commands.literal("reload").executes(LiminalCommands::reload))
 			.then(Commands.literal("restore").executes(LiminalCommands::restore))
@@ -203,7 +201,7 @@ public final class LiminalCommands {
 
 	/** Saves where {@code player} stands as the place /blendermc leave returns to, unless they are already in a liminal dimension. */
 	private static void rememberReturn(MinecraftServer server, ServerPlayer player) {
-		if (player.level().dimension() != LiminalLevels.DIMENSION && player.level().dimension() != dev.blendermc.endless.Endless.DIMENSION) {
+		if (player.level().dimension() != LiminalLevels.DIMENSION) {
 			Return back = new Return();
 			back.dimension = player.level().dimension().identifier().toString();
 			back.x = player.getX();
@@ -213,28 +211,6 @@ public final class LiminalCommands {
 			back.pitch = player.getXRot();
 			state(server).returns.put(player.getUUID().toString(), back);
 		}
-	}
-
-	/** /blendermc endless: into the endless world at the generator's spawn. */
-	private static int enterEndless(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
-		CommandSourceStack source = context.getSource();
-		ServerPlayer player = source.getPlayerOrException();
-		MinecraftServer server = source.getServer();
-		ServerLevel world = server.getLevel(dev.blendermc.endless.Endless.DIMENSION);
-		if (world == null) {
-			source.sendFailure(Component.literal("The endless dimension is not loaded in this world"));
-			return 0;
-		}
-		dev.blendermc.endless.Endless.ensureSeed(server);
-		double[] spawn = dev.blendermc.endless.Endless.generator().spawn();
-		rememberReturn(server, player);
-		save();
-		world.getChunk(net.minecraft.util.Mth.floor(spawn[0]) >> 4, net.minecraft.util.Mth.floor(spawn[2]) >> 4);
-		dev.blendermc.endless.Endless.onJoin(server, player);
-		player.teleportTo(world, spawn[0], spawn[1], spawn[2], Set.of(), (float) spawn[3], 0.0F, true);
-		player.resetFallDistance();
-		source.sendSuccess(() -> Component.literal("Entered the endless world (seed " + dev.blendermc.endless.Endless.seed() + ")"), false);
-		return 1;
 	}
 
 	private static int leave(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
@@ -327,11 +303,6 @@ public final class LiminalCommands {
 
 	private static int restore(CommandContext<CommandSourceStack> context) {
 		CommandSourceStack source = context.getSource();
-		if (source.getPlayer() != null && source.getPlayer().level().dimension() == dev.blendermc.endless.Endless.DIMENSION) {
-			int placed = dev.blendermc.endless.EndlessWorld.restore((ServerLevel) source.getPlayer().level());
-			source.sendSuccess(() -> Component.literal("Restored " + placed + " cells of the endless world"), false);
-			return 1;
-		}
 		ServerLevel liminal = source.getServer().getLevel(LiminalLevels.DIMENSION);
 		String name = levelFor(source.getServer(), source.getPlayer());
 		LiminalMesh mesh = LiminalLevels.get(name);

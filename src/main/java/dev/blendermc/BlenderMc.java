@@ -12,7 +12,6 @@ public class BlenderMc implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		dev.blendermc.liminal.LiminalCommands.register();
-		dev.blendermc.endless.Endless.register();
 		dev.blendermc.live.LiveLink.register();
 		LOGGER.info("BlenderMC loaded.");
 	}

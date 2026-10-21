@@ -222,7 +222,7 @@ public final class LiminalWorld {
 		if (filling || !isFree(state)) {
 			return;
 		}
-		String level = world.dimension() == dev.blendermc.endless.Endless.DIMENSION ? dev.blendermc.endless.Endless.LEVEL : LiminalLevels.levelAt(pos);
+		String level = LiminalLevels.levelAt(pos);
 		if (level == null) {
 			return;
 		}
@@ -235,12 +235,11 @@ public final class LiminalWorld {
 	/** Server tick: settles removals, puts level cells back where a replacing block has gone (scan once a second as a safety net). */
 	public static void tick(MinecraftServer server) {
 		ServerLevel world = server.getLevel(LiminalLevels.DIMENSION);
-		ServerLevel endless = server.getLevel(dev.blendermc.endless.Endless.DIMENSION);
 		boolean freed = !FREED.isEmpty();
 		FREED.clear();
 		if (!REMOVALS.isEmpty()) {
 			for (Removal removal : List.copyOf(REMOVALS)) {
-				ServerLevel where = dev.blendermc.endless.Endless.LEVEL.equals(removal.level) ? endless : world;
+				ServerLevel where = world;
 				if (where == null) {
 					continue;
 				}
@@ -266,9 +265,6 @@ public final class LiminalWorld {
 			for (String level : LiminalLevels.slots().keySet()) {
 				putBackReplaced(server, world, level);
 			}
-		}
-		if (endless != null) {
-			putBackReplaced(server, endless, dev.blendermc.endless.Endless.LEVEL);
 		}
 	}
 

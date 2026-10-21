@@ -26,9 +26,6 @@ public class BlenderMcClient implements ClientModInitializer {
 		ClientPlayNetworking.registerGlobalReceiver(dev.blendermc.liminal.LiminalTimePayload.TYPE,
 			(payload, context) -> dev.blendermc.liminal.LiminalDay.setOffset(payload.level(), payload.offset()));
 		dev.blendermc.liminal.client.LiminalRenderer.register();
-		dev.blendermc.endless.client.EndlessClient.register();
 		LiveLinkClient.register();
-		ClientPlayNetworking.registerGlobalReceiver(dev.blendermc.endless.EndlessSeedPayload.TYPE,
-			(payload, context) -> dev.blendermc.endless.client.EndlessClient.setSeed(payload.seed()));
 	}
 }
