@@ -4,6 +4,10 @@ Fabric mod for Minecraft 1.21.11 that links the game to a running Blender. The s
 
 Side project, nothing serious. Most of the code was written with Claude Opus 5.5 in Claude Code. Expect rough edges.
 
+![Minecraft on the left, Blender on the right, both running at the same time](docs/media/preview.png)
+
+Demo, one continuous screen recording (1:47): [docs/media/demo.mp4](docs/media/demo.mp4)
+
 ## What goes across
 
 Blender to the game:
@@ -23,6 +27,15 @@ The game to Blender:
 Levels are meshes, not blocks: collision is per triangle, cells can be broken and placed back, and lighting is baked on the CPU.
 
 How it works, every option, and the wire protocol: [docs/BLENDER-LIVE.md](docs/BLENDER-LIVE.md).
+
+## Screenshots
+
+| | |
+|---|---|
+| ![Grease pencil strokes drawn in Blender, in the game](docs/media/grease-pencil.png) | ![A hole mined in the game, cut out of the Blender mesh](docs/media/break-mesh.png) |
+| Grease pencil strokes drawn in Blender show up in the game. | A hole mined in the game is cut out of the mesh in Blender. |
+| ![Mobs and a boat from the game, in Blender](docs/media/mobs.png) | |
+| Mobs and boats from the game, animated in Blender. | |
 
 ## Running it
 
