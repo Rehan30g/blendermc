@@ -3,9 +3,10 @@
 	"id": "blendermc",
 	"version": "${version}",
 	"name": "BlenderMC",
+	"contact": {"sources": "https://github.com/Rehan30g/blendermc", "issues": "https://github.com/Rehan30g/blendermc/issues"},
 	"description": "Live link between Blender and Minecraft: the open Blender scene is a level in the game, and the game shows up in Blender.",
-	"authors": [],
-	"license": "All-Rights-Reserved",
+	"authors": ["Rehan30g"],
+	"license": "MIT",
 	"environment": "*",
 	"entrypoints": {
 		"main": [

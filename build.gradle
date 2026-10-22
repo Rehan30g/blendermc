@@ -4,7 +4,7 @@ plugins {
 	id 'net.fabricmc.fabric-loom-remap'
 }
 
-version = rootProject.version
+version = project.mod_version
 group = "dev.blendermc"
 
 base {

@@ -1,14 +1,17 @@
 schema_version = "1.0.0"
 
 id = "blendermc_live"
-version = "0.1.0"
+version = "0.2.0"
 name = "BlenderMC Live"
 tagline = "Live link between this scene and a running BlenderMC level"
-maintainer = "BlenderMC"
+maintainer = "Rehan30g"
 type = "add-on"
 blender_version_min = "4.2.0"
-license = ["SPDX:GPL-3.0-or-later"]
+license = ["SPDX:MIT"]
 
 [permissions]
 network = "Talks to the game on 127.0.0.1"
 files = "Caches block textures from the game in the temp folder"
+
+[build]
+paths_exclude_pattern = ["__pycache__/", "/.git/", "*.zip"]

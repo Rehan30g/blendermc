@@ -37,15 +37,24 @@ How it works, every option, and the wire protocol: [docs/BLENDER-LIVE.md](docs/B
 | ![Mobs and a boat from the game, in Blender](docs/media/mobs.png) | |
 | Mobs and boats from the game, animated in Blender. | |
 
-## Running it
+## Install
 
-Java 21 and Blender 5.2.
+From the [latest release](https://github.com/Rehan30g/blendermc/releases/latest):
+
+1. Put `blendermc-<version>.jar` in your `mods` folder, next to [Fabric API](https://modrinth.com/mod/fabric-api). Minecraft 1.21.11, Fabric Loader 0.19.5 or newer, Java 21.
+2. In Blender 5.2: Edit > Preferences > Get Extensions > the arrow menu at the top right > Install from Disk, and pick `blendermc_live-<version>.zip`.
+3. Open a world in the game. In Blender's 3D view sidebar (N), BlenderMC tab, click Connect, then Put player in level.
+
+The link listens on `127.0.0.1:47660` while a world is open. Start the game with `-Dblendermc.live=false` to turn it off. Restart Blender after updating the add-on; the panel shows its version and the game says when the two don't match.
+
+## Building from source
 
 ```
-gradlew runLiminalClient
+gradlew build              # jar in build/libs
+gradlew runLiminalClient   # dev client with the mod
 ```
 
-Install the add-on by copying `tools/blender/blendermc_live` into `%APPDATA%\Blender Foundation\Blender\5.2\scripts\addons\` and enabling it. Open a world in the game, then in Blender's 3D view sidebar (N), BlenderMC tab, click Connect and then Put player in level. Restart Blender after updating the add-on.
+For working on the add-on, link or copy `tools/blender/blendermc_live` into `%APPDATA%\Blender Foundation\Blender\5.2\scripts\addons\` and enable it. More in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 On my machine this folder sits inside a bigger Gradle build so the Minecraft cache is shared. Cloned on its own, `settings.gradle` and `gradle.properties` make it a standalone build.
 
@@ -64,7 +73,7 @@ docs/BLENDER-LIVE.md
 
 ## Limitations
 
-- Development environment, singleplayer and localhost only.
+- Singleplayer and localhost only; one Blender at a time.
 - Light colour affects the level mesh only; entities and vanilla blocks use the vanilla lightmap.
 - Held items use an approximate pose.
 - Signs use Blender's default font; animated textures show their first frame.
@@ -73,4 +82,10 @@ docs/BLENDER-LIVE.md
 
 Code mostly by Claude Opus 5.5 (Claude Code); ideas and testing by me. Built on Fabric, Fabric API, Sodium and Mod Menu.
 
-No license. All rights reserved.
+## Contributing
+
+Bug reports, ideas and pull requests are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md). Issues have templates for bugs and ideas.
+
+## License
+
+MIT, see [LICENSE](LICENSE).

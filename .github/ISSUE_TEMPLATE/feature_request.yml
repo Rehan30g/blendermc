@@ -1,0 +1,16 @@
+name: Idea
+description: Something you would like to see go between Blender and Minecraft.
+labels: [idea]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: The idea
+      description: What should happen, on which side (Blender, the game, or both).
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why
+      description: What you are trying to make or show with it.

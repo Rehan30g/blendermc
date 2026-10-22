@@ -2,12 +2,12 @@
 
 The scene open in Blender is a level in the game, rebuilt as you edit it. What happens in the game comes back into Blender.
 
-The link runs in a development environment (`runLiminalClient`); elsewhere start the game with `-Dblendermc.live=true`. It listens on `127.0.0.1:47660` (change with `-Dblendermc.live.port`) and accepts one Blender at a time.
+The link is on whenever a world is open; start the game with `-Dblendermc.live=false` to turn it off. It listens on `127.0.0.1:47660` (change with `-Dblendermc.live.port`) and accepts one Blender at a time. The `command` message (run any command) only works in a development environment.
 
 ## Setup
 
 1. `gradlew runLiminalClient` and open any world (`-PquickPlay=<world folder>` opens one on launch).
-2. Install the add-on: put `tools/blender/blendermc_live` in `%APPDATA%\Blender Foundation\Blender\5.2\scripts\addons\` (a junction works, so edits in the repo apply after restarting Blender) and enable it.
+2. Install the add-on: from a release, Edit > Preferences > Get Extensions > Install from Disk with `blendermc_live-<version>.zip`; from the source, put `tools/blender/blendermc_live` in `%APPDATA%\Blender Foundation\Blender\5.2\scripts\addons\` (a junction works, so edits in the repo apply after restarting Blender) and enable it.
 3. In the 3D view sidebar (N), BlenderMC tab: set **Level** (lowercase letters, digits, `_`, `-`) and click **Connect**.
 4. Click **Put player in level**. The player is teleported to the `spawn` empty. If nobody has joined the world yet, it happens when they do.
 

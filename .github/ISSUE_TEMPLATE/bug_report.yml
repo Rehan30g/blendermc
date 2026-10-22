@@ -1,0 +1,41 @@
+name: Bug report
+description: Something in the game or in Blender does not do what it should.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what you got instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: How to reproduce
+      description: The smallest steps or scene that shows it. A small .blend helps a lot.
+      placeholder: |
+        1. Connect with level "test"
+        2. Add a ...
+        3. In the game, ...
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: Mod version, add-on version (shown in the Blender panel), Blender version, Fabric Loader and Fabric API.
+      placeholder: blendermc 0.2.0, add-on 0.2.0, Blender 5.2, Loader 0.19.5, Fabric API 0.141.6
+    validations:
+      required: true
+  - type: input
+    id: mods
+    attributes:
+      label: Other mods
+      description: Sodium, Iris, shaders, anything else that changes rendering.
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs and screenshots
+      description: The game's latest.log (lines with blendermc), Blender's console output, screenshots or a short clip.
+      render: text

@@ -53,7 +53,7 @@ import org.slf4j.LoggerFactory;
  *
  * <p>Loopback TCP, one Blender at a time. Each frame is a big-endian int length + UTF-8 JSON header, then a big-endian
  * int length + binary payload (may be empty). Coordinates sent to Blender are glTF axes relative to the level origin.
- * On in a development run; elsewhere with {@code -Dblendermc.live=true}. Port: {@code -Dblendermc.live.port}.
+ * On unless started with {@code -Dblendermc.live=false}. Port: {@code -Dblendermc.live.port}.
  */
 public final class LiveLink {
 	/** 2: block models, entities, lamps. Blender's add-on says its own in hello; a mismatch means it is an old copy. */
@@ -87,7 +87,8 @@ public final class LiveLink {
 	}
 
 	public static void register() {
-		if (!FabricLoader.getInstance().isDevelopmentEnvironment() && !Boolean.getBoolean("blendermc.live")) {
+		// On unless -Dblendermc.live=false: listening on 127.0.0.1 only, it is what the mod is for.
+		if ("false".equalsIgnoreCase(System.getProperty("blendermc.live"))) {
 			return;
 		}
 		ServerLifecycleEvents.SERVER_STARTED.register(LiveLink::start);
@@ -188,6 +189,11 @@ public final class LiveLink {
 				s.execute(() -> camera(s, x, y, z, yaw, pitch));
 			}
 			case "command" -> {
+				// Full-permission commands from any local program: only while developing (the tests drive the game this way).
+				if (!FabricLoader.getInstance().isDevelopmentEnvironment()) {
+					from.status("commands from Blender only work in a development environment");
+					return;
+				}
 				String command = header.get("command").getAsString();
 				s.execute(() -> command(s, command));
 			}
@@ -280,8 +286,8 @@ public final class LiveLink {
 			return;
 		}
 		enterPending = false;
-		ServerPlayer player = players.getFirst();
-		s.getCommands().performPrefixedCommand(player.createCommandSourceStack(), "blendermc enter " + name);
+		// The server's permission, as the player: putting them in the level works in a world without cheats too.
+		s.getCommands().performPrefixedCommand(atPlayer(s, s.createCommandSourceStack()), "blendermc enter " + name);
 	}
 
 	private static final String CAMERA_TAG = "blendermc_blender_camera";
@@ -304,35 +310,44 @@ public final class LiveLink {
 			e -> e.getTags().contains(CAMERA_TAG)).isEmpty();
 		String dimension = "execute in " + LiminalLevels.DIMENSION.identifier() + " run ";
 		if (!exists) {
-			command(s, dimension + "summon minecraft:block_display " + at + " {Tags:[\"" + CAMERA_TAG + "\"],block_state:{Name:\"minecraft:observer\","
+			quiet(s, dimension + "summon minecraft:block_display " + at + " {Tags:[\"" + CAMERA_TAG + "\"],block_state:{Name:\"minecraft:observer\","
 				+ "Properties:{facing:\"south\"}},Glowing:1b,glow_color_override:16747520,teleport_duration:3,brightness:{sky:15,block:15},"
 				+ "transformation:{left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f],translation:[-0.25f,-0.25f,-0.25f],scale:[0.5f,0.5f,0.5f]}}");
-			command(s, dimension + "summon minecraft:text_display " + at + " {Tags:[\"" + CAMERA_TAG + "\",\"" + CAMERA_TAG + "_label\"],"
+			quiet(s, dimension + "summon minecraft:text_display " + at + " {Tags:[\"" + CAMERA_TAG + "\",\"" + CAMERA_TAG + "_label\"],"
 				+ "text:\"Blender\",billboard:\"center\",teleport_duration:3,see_through:1b,background:1073741824}");
 		}
 		cameraShown = true;
-		command(s, dimension + "tp @e[tag=" + CAMERA_TAG + ",tag=!" + CAMERA_TAG + "_label] " + at
+		quiet(s, dimension + "tp @e[tag=" + CAMERA_TAG + ",tag=!" + CAMERA_TAG + "_label] " + at
 			+ String.format(java.util.Locale.ROOT, " %.2f %.2f", yaw, pitch));
-		command(s, dimension + "tp @e[tag=" + CAMERA_TAG + "_label] "
+		quiet(s, dimension + "tp @e[tag=" + CAMERA_TAG + "_label] "
 			+ String.format(java.util.Locale.ROOT, "%.3f %.3f %.3f", wx, wy + 0.45, wz));
 	}
 
 	private static void hideCamera(MinecraftServer s) {
 		if (cameraShown) {
 			cameraShown = false;
-			command(s, "execute in " + LiminalLevels.DIMENSION.identifier() + " run kill @e[tag=" + CAMERA_TAG + "]");
+			quiet(s, "execute in " + LiminalLevels.DIMENSION.identifier() + " run kill @e[tag=" + CAMERA_TAG + "]");
 		}
 	}
 
 	/** A command from Blender, run with full permission at the first player (or the server when nobody is on). */
 	private static void command(MinecraftServer s, String command) {
+		s.getCommands().performPrefixedCommand(atPlayer(s, s.createCommandSourceStack()), command);
+	}
+
+	/** A command the link runs for itself (the camera marker): no feedback in the chat. */
+	private static void quiet(MinecraftServer s, String command) {
+		s.getCommands().performPrefixedCommand(s.createCommandSourceStack().withSuppressedOutput(), command);
+	}
+
+	/** {@code source} placed at the first player (as that entity, in their level), when someone is on. */
+	private static net.minecraft.commands.CommandSourceStack atPlayer(MinecraftServer s, net.minecraft.commands.CommandSourceStack source) {
 		List<ServerPlayer> players = s.getPlayerList().getPlayers();
-		net.minecraft.commands.CommandSourceStack source = s.createCommandSourceStack();
 		if (!players.isEmpty()) {
 			ServerPlayer player = players.getFirst();
 			source = source.withEntity(player).withLevel(player.level()).withPosition(player.position()).withRotation(player.getRotationVector());
 		}
-		s.getCommands().performPrefixedCommand(source, command);
+		return source;
 	}
 
 	private static void tick(MinecraftServer s) {
